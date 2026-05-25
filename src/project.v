@@ -2,7 +2,7 @@
 
 module tt_um_example (
     input  wire [7:0] ui_in,
-    output wire [7:0] uo_out,
+    output reg  [7:0] uo_out,
 
     input  wire [7:0] uio_in,
     output wire [7:0] uio_out,
@@ -13,6 +13,7 @@ module tt_um_example (
     input  wire rst_n
 );
 
+    // Address and control
     wire [1:0] addr;
     wire [5:0] write_data;
     wire we;
@@ -21,9 +22,14 @@ module tt_um_example (
     assign write_data = ui_in[7:2];
     assign we         = uio_in[0];
 
+    // Cache memory
     reg [5:0] cache_mem [0:3];
 
     integer i;
+
+    //--------------------------------------------------
+    // Reset and Write Logic
+    //--------------------------------------------------
 
     always @(posedge clk or negedge rst_n)
     begin
@@ -40,7 +46,18 @@ module tt_um_example (
         end
     end
 
-    assign uo_out = {2'b00, cache_mem[addr]};
+    //--------------------------------------------------
+    // Read Logic
+    //--------------------------------------------------
+
+    always @(*)
+    begin
+        uo_out = {2'b00, cache_mem[addr]};
+    end
+
+    //--------------------------------------------------
+    // Unused IO
+    //--------------------------------------------------
 
     assign uio_out = 8'b00000000;
     assign uio_oe  = 8'b00000000;
