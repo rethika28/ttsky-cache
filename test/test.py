@@ -5,45 +5,51 @@ from cocotb.triggers import Timer
 @cocotb.test()
 async def cache_test(dut):
 
-    # Initialize signals
+    # Initialize
     dut.ui_in.value = 0
     dut.uio_in.value = 0
     dut.ena.value = 1
     dut.clk.value = 0
     dut.rst_n.value = 0
 
-    # Reset
+    # Apply reset
     await Timer(10, units="ns")
+
+    dut.clk.value = 1
+    await Timer(10, units="ns")
+
+    dut.clk.value = 0
     dut.rst_n.value = 1
 
-    # -----------------------------
-    # WRITE: Store 25 at address 2
-    # -----------------------------
+    await Timer(10, units="ns")
 
-    # data = 25
-    # address = 2
+    # --------------------------------
+    # WRITE value 25 at address 2
+    # --------------------------------
 
     dut.ui_in.value = (25 << 2) | 0b10
     dut.uio_in.value = 1
 
-    # clock pulse
+    # clock edge
     dut.clk.value = 1
     await Timer(10, units="ns")
 
     dut.clk.value = 0
     await Timer(10, units="ns")
 
-    # -----------------------------
-    # READ
-    # -----------------------------
+    # --------------------------------
+    # READ from address 2
+    # --------------------------------
 
     dut.uio_in.value = 0
     dut.ui_in.value = 0b10
 
     await Timer(10, units="ns")
 
-    result = dut.uo_out.value.integer
+    # Read output safely
+    result = dut.uo_out.value.binstr
 
-    cocotb.log.info(f"Cache Output = {result}")
+    cocotb.log.info(f"Cache Output Binary = {result}")
 
-    assert result == 25
+    # Expected = 00011001 (25)
+    assert result == "00011001"
