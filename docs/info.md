@@ -8,13 +8,26 @@ You can also include images in this folder and reference them in the markdown. E
 -->
 
 ## How it works
+This project implements a simple direct-mapped cache memory using Verilog HDL for TinyTapeout ASIC flow.
 
-Explain how your project works
+The design supports:
+- cache read operation
+- cache write operation
+- synchronous write
+- asynchronous read
 
+The cache contains:
+- 4 memory locations
+- 6-bit data storage
+- 2-bit address input
 ## How to test
 
-Explain how to use your project
+ TinyTapeout compatible
+- Simple cache architecture
+- Verilog RTL design
+- VCD waveform support
+- Easy FPGA/ASIC integration
 
 ## External hardware
 
-List external hardware used in your project (e.g. PMOD, LED display, etc), if any
+No external hardware used in your project (e.g. PMOD, LED display, etc), if any
