@@ -1,45 +1,41 @@
-import os
+import cocotb
+from cocotb.triggers import Timer
 
-print("===================================")
-print(" TinyTapeout Cache Memory Test ")
-print("===================================")
 
-#-----------------------------------
-# Compile Verilog Files
-#-----------------------------------
+@cocotb.test()
+async def cache_test(dut):
 
-compile_cmd = "iverilog -o cache_sim tt_um_example.v tb.v"
+    dut.ui_in.value = 0
+    dut.uio_in.value = 0
+    dut.ena.value = 1
+    dut.clk.value = 0
+    dut.rst_n.value = 0
 
-print("\nCompiling Verilog Files...\n")
+    await Timer(10, units="ns")
 
-compile_status = os.system(compile_cmd)
+    dut.rst_n.value = 1
 
-if compile_status != 0:
-    print("Compilation Failed!")
-    exit()
+    # Write value 25 to address 2
+    dut.ui_in.value = (25 << 2) | 0b10
+    dut.uio_in.value = 1
 
-print("Compilation Successful!")
+    # Clock pulse
+    dut.clk.value = 1
+    await Timer(10, units="ns")
 
-#-----------------------------------
-# Run Simulation
-#-----------------------------------
+    dut.clk.value = 0
+    await Timer(10, units="ns")
 
-run_cmd = "vvp cache_sim"
+    # Disable write
+    dut.uio_in.value = 0
 
-print("\nRunning Simulation...\n")
+    # Read address 2
+    dut.ui_in.value = 0b10
 
-run_status = os.system(run_cmd)
+    await Timer(10, units="ns")
 
-if run_status != 0:
-    print("Simulation Failed!")
-    exit()
+    result = dut.uo_out.value.integer
 
-print("\nSimulation Completed Successfully!")
+    print("Cache Output =", result)
 
-#-----------------------------------
-# Open Waveform
-#-----------------------------------
-
-print("\nOpening GTKWave...\n")
-
-os.system("gtkwave cache.vcd &")
+    assert result == 25
