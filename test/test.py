@@ -1,47 +1,49 @@
 import cocotb
-from cocotb.triggers import RisingEdge
+from cocotb.triggers import Timer
 
 
 @cocotb.test()
 async def cache_test(dut):
 
-    # Initialize
+    # Initialize signals
     dut.ui_in.value = 0
     dut.uio_in.value = 0
     dut.ena.value = 1
-    dut.rst_n.value = 0
     dut.clk.value = 0
+    dut.rst_n.value = 0
 
     # Reset
-    for _ in range(2):
-        dut.clk.value = 0
-        await RisingEdge(dut.clk)
-
+    await Timer(10, units="ns")
     dut.rst_n.value = 1
 
-    # Write value 25 to address 2
-    # ui_in[7:2] = data
-    # ui_in[1:0] = address
+    # -----------------------------
+    # WRITE: Store 25 at address 2
+    # -----------------------------
+
+    # data = 25
+    # address = 2
 
     dut.ui_in.value = (25 << 2) | 0b10
     dut.uio_in.value = 1
 
-    # Clock pulse for write
+    # clock pulse
     dut.clk.value = 1
-    await RisingEdge(dut.clk)
+    await Timer(10, units="ns")
 
     dut.clk.value = 0
+    await Timer(10, units="ns")
 
-    # Disable write
+    # -----------------------------
+    # READ
+    # -----------------------------
+
     dut.uio_in.value = 0
-
-    # Read from address 2
     dut.ui_in.value = 0b10
 
-    await RisingEdge(dut.clk)
+    await Timer(10, units="ns")
 
-    result = int(dut.uo_out.value)
+    result = dut.uo_out.value.integer
 
-    print("Cache Output =", result)
+    cocotb.log.info(f"Cache Output = {result}")
 
-    assert result == 25, f"Expected 25 but got {result}"
+    assert result == 25
